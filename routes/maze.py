@@ -113,15 +113,23 @@ def maze(last_move, data):
 previousData = None
 previousMove = None
 shortestMove = False
+previousID = None
 moveTracker = []
 
 
 @app.route("/maze", methods=["POST"])
 def maze_test():
-    global previousData, previousMove, moveTracker, shortestMove
+    global previousData, previousMove, moveTracker, shortestMove, previousID
     data = request.get_json()
 
     logging.info("data sent for evaluation {}".format(data))
+
+    if previousID is not None and previousID != data.get("mazeID"):
+        previousData = None
+        previousMove = None
+        shortestMove = False
+        previousID = None
+        moveTracker = []
 
     if previousMove == "respawn":
         shortestMove = True
@@ -142,6 +150,7 @@ def maze_test():
 
     previousData = data
     previousMove = result["playerAction"]
+    previousID = data.get("mazeID")
 
     opposite_directions = {"left": "right", "right": "left", "up": "down", "down": "up"}
     if (
