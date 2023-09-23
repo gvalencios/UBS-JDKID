@@ -59,7 +59,21 @@ def maze(last_move, data):
             if result:
                 return result
 
+    def check_goal():
+        if Map[posX][posY + 1] == 3:
+            return Direction.RIGHT
+        elif Map[posX][posY - 1] == 3:
+            return Direction.LEFT
+        elif Map[posX - 1][posY] == 3:
+            return Direction.UP
+        elif Map[posX + 1][posY] == 3:
+            return Direction.DOWN
+        else:
+            return False
+
     def check_next_move(lastMove):
+        if check_goal():
+            return check_goal()
         if last_move == None:
             if Map[posX][posY + 1] == 1:
                 return Direction.RIGHT
