@@ -1,26 +1,14 @@
 import json
 import logging
+import http.cookiejar
+
 from enum import Enum
-
-from flask import request, session
-
+from flask import Flask, make_response, request, session
 from routes import app
 
 logger = logging.getLogger(__name__)
 
-
-# {
-#     "mazeId": "30d9caf8",
-#     "nearby": [[0, 0, 0], [0, 2, 1], [0, 0, 1]],
-#     "mazeWidth": 6,
-#     "step": 0,
-#     "remainingAccumulatedStep": 216,
-#     "isPreviousMovementValid": False,
-#     "message": "invalid movement",
-#     "remainingEvaluationTimeInSec": 353,
-# }
-
-app.secret_key = "your-secret-key"
+app.secret_key = "lalalala"
 
 
 def maze(last_move, data):
@@ -109,17 +97,39 @@ def maze(last_move, data):
     return {"playerAction": playerAction}
 
 
+previousData = None
+previousMove = None
+
+
 @app.route("/maze", methods=["POST"])
 def maze_test():
+    global previousData, previousMove
     data = request.get_json()
+
     logging.info("data sent for evaluation {}".format(data))
-    previousMap = session.get("previous_position")
-    previousMove = session.get("previous_move")
-    result = maze(previousMove, data)
-    session["previous_position"] = data.get("nearby")
-    session["previous_move"] = result["playerAction"]
-    logging.info("Previous map: {}".format(previousMap))
-    logging.info("Current map: {}".format(session["previous_position"]))
-    logging.info("Previous move: {}".format(previousMove))
-    logging.info("Current move: {}".format(session["previous_move"]))
+
+    if previousData is not None:
+        logging.info("Previous map: {}".format(previousData.get("nearby")))
+        logging.info("Current map: {}".format(data.get("nearby")))
+        logging.info("Previous move: {}".format(previousMove))
+        result = maze(previousMove, data)
+        logging.info("Current move: {}".format(result["playerAction"]))
+    else:
+        logging.info("Previous data not found.")
+        result = maze(None, data)
+
+    previousData = data
+    previousMove = result["playerAction"]
+
+    # session["previous_position"] = data.get("nearby")
+    # session["previous_move"] = result["playerAction"]
+    # logging.info("Previous map: {}".format(previousMap))
+    # logging.info("Current map: {}".format(session["previous_position"]))
+    # logging.info("Previous move: {}".format(previousMove))
+    # logging.info("Current move: {}".format(session["previous_move"]))
+
+    # # Store the new previous move in a cookie
+    # response.set_cookie("previous_move_cookie", str(maze(None, data)))
+    # logging.info("tes cookie: {}".format(request.cookies.get("my_data_cookie")))
+
     return json.dumps(result)
