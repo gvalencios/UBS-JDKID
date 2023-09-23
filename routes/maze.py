@@ -61,19 +61,20 @@ def maze(last_move, data):
 
     def check_goal():
         if Map[posX][posY + 1] == 3:
-            return Direction.RIGHT
+            return "right"
         elif Map[posX][posY - 1] == 3:
-            return Direction.LEFT
+            return "left"
         elif Map[posX - 1][posY] == 3:
-            return Direction.UP
+            return "up"
         elif Map[posX + 1][posY] == 3:
-            return Direction.DOWN
+            return "down"
         else:
             return False
 
     def check_next_move(lastMove):
         if check_goal():
-            return check_goal()
+            moveTracker.append(check_goal())
+            return "respawn"
         if last_move == None:
             if Map[posX][posY + 1] == 1:
                 return Direction.RIGHT
@@ -93,15 +94,11 @@ def maze(last_move, data):
             elif last_move == "down":
                 return find_way(yes_left(), yes_down(), yes_right(), yes_up())
 
-    # passStart = False
-    # if Map[posX][posY] == 2 and passStart == False:
-    #     last_move = None
-    #     passStart = True
-
     direction = check_next_move(last_move)
-
     playerAction = None
-    if direction == Direction.UP:
+    if direction == "respawn":
+        playerAction = "respawn"
+    elif direction == Direction.UP:
         playerAction = "up"
     elif direction == Direction.RIGHT:
         playerAction = "right"
@@ -115,14 +112,23 @@ def maze(last_move, data):
 
 previousData = None
 previousMove = None
+shortestMove = False
+moveTracker = []
 
 
 @app.route("/maze", methods=["POST"])
 def maze_test():
-    global previousData, previousMove
+    global previousData, previousMove, moveTracker, shortestMove
     data = request.get_json()
 
     logging.info("data sent for evaluation {}".format(data))
+
+    if previousMove == "respawn":
+        shortestMove = True
+
+    if shortestMove == True:
+        move = moveTracker.pop(0)
+        return {"playerAction": move}
 
     if previousData is not None:
         logging.info("Previous map: {}".format(previousData.get("nearby")))
@@ -137,15 +143,16 @@ def maze_test():
     previousData = data
     previousMove = result["playerAction"]
 
-    # session["previous_position"] = data.get("nearby")
-    # session["previous_move"] = result["playerAction"]
-    # logging.info("Previous map: {}".format(previousMap))
-    # logging.info("Current map: {}".format(session["previous_position"]))
-    # logging.info("Previous move: {}".format(previousMove))
-    # logging.info("Current move: {}".format(session["previous_move"]))
-
-    # # Store the new previous move in a cookie
-    # response.set_cookie("previous_move_cookie", str(maze(None, data)))
-    # logging.info("tes cookie: {}".format(request.cookies.get("my_data_cookie")))
+    opposite_directions = {"left": "right", "right": "left", "up": "down", "down": "up"}
+    if (
+        previousMove in opposite_directions
+        and opposite_directions[previousMove] in moveTracker
+    ):
+        moveTracker.reverse()
+        moveTracker.remove(opposite_directions[previousMove])
+        moveTracker.reverse()
+    else:
+        moveTracker.append(previousMove)
+    logging.info("Move tracker: {}".format(moveTracker))
 
     return json.dumps(result)
