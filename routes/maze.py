@@ -85,7 +85,7 @@ def maze(last_move, data):
             if last_move == "right":
                 return find_way(yes_down(), yes_right(), yes_up(), yes_left())
             elif last_move == "left":
-                return find_way(yes_down(), yes_left(), yes_up(), yes_right())
+                return find_way(yes_up(), yes_left(), yes_down(), yes_right())
             elif last_move == "up":
                 return find_way(yes_right(), yes_up(), yes_left(), yes_down())
             elif last_move == "down":
