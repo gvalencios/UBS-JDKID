@@ -136,6 +136,12 @@ def maze_test():
 
     if shortestMove == True:
         move = moveTracker.pop(0)
+        if move == "respawn":
+            previousData = None
+            previousMove = None
+            shortestMove = False
+            previousID = None
+            moveTracker = []
         return {"playerAction": move}
 
     if previousData is not None:
