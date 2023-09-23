@@ -31,25 +31,25 @@ def maze(last_move, data):
     posX, posY = 1, 1
 
     def yes_right():
-        if Map[posX][posY + 1] == 1:
+        if Map[posX][posY + 1] != 0:
             return Direction.RIGHT
         else:
             return False
 
     def yes_left():
-        if Map[posX][posY - 1] == 1:
+        if Map[posX][posY - 1] != 0:
             return Direction.LEFT
         else:
             return False
 
     def yes_up():
-        if Map[posX - 1][posY] == 1:
+        if Map[posX - 1][posY] != 0:
             return Direction.UP
         else:
             return False
 
     def yes_down():
-        if Map[posX + 1][posY] == 1:
+        if Map[posX + 1][posY] != 0:
             return Direction.DOWN
         else:
             return False
@@ -93,8 +93,10 @@ def maze(last_move, data):
             elif last_move == "down":
                 return find_way(yes_left(), yes_down(), yes_right(), yes_up())
 
-    if Map[posX][posY] == 2:
-        last_move = None
+    # passStart = False
+    # if Map[posX][posY] == 2 and passStart == False:
+    #     last_move = None
+    #     passStart = True
 
     direction = check_next_move(last_move)
 
